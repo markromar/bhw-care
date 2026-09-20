@@ -1,3 +1,4 @@
+import { localStore } from '@/data/instance';
 import type { RoleRow } from '@/domain/sessionContext';
 import { useSessionStore } from '@/state/sessionStore';
 
@@ -44,9 +45,14 @@ export async function signIn(email: string, password: string): Promise<SignInRes
 }
 
 export async function signOut(): Promise<void> {
-  await getSupabase().auth.signOut();
-  useSessionStore.getState().setSignedOut();
-  resetLanguage();
+  try {
+    await getSupabase().auth.signOut();
+  } finally {
+    // Local cleanup always runs, even if contacting the server failed.
+    useSessionStore.getState().setSignedOut();
+    resetLanguage();
+    await localStore.wipeAll();
+  }
 }
 
 /**
@@ -71,6 +77,7 @@ export function startSessionListener(): () => void {
     if (event === 'SIGNED_OUT') {
       useSessionStore.getState().setSignedOut();
       resetLanguage();
+      void localStore.wipeAll();
     }
   });
 
