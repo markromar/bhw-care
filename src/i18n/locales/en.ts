@@ -57,4 +57,10 @@ export const en = {
     home: 'Home',
     profile: 'Profile',
   },
+  record: {
+    checking: 'Checking access…',
+    denied: 'You do not have access to this record.',
+    notAvailable: 'This record is not available.',
+    offline: 'Internet connection required to verify access.',
+  },
 };

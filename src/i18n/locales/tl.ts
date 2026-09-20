@@ -60,4 +60,10 @@ export const tl: typeof en = {
     home: 'Home',
     profile: 'Profile',
   },
+  record: {
+    checking: 'Sinusuri ang access…',
+    denied: 'Wala kayong access sa record na ito.',
+    notAvailable: 'Hindi available ang record na ito.',
+    offline: 'Kailangan ng internet upang ma-verify ang access.',
+  },
 };
