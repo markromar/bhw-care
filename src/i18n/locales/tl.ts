@@ -56,4 +56,8 @@ export const tl: typeof en = {
     layoutBottomTabs: 'Bottom tabs',
     placeholderNote: 'Pansamantalang home. Darating ang tunay na dashboard.',
   },
+  nav: {
+    home: 'Home',
+    profile: 'Profile',
+  },
 };

@@ -53,4 +53,8 @@ export const en = {
     layoutBottomTabs: 'Bottom tabs',
     placeholderNote: 'Temporary role home. Real dashboards come later.',
   },
+  nav: {
+    home: 'Home',
+    profile: 'Profile',
+  },
 };
