@@ -1,10 +1,7 @@
-import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
-import {
-    createChunkedStorage,
-    type AsyncKeyValueBackend,
-} from "./chunkedStorage";
+import { createChunkedStorage, type AsyncKeyValueBackend } from './chunkedStorage';
 
 /**
  * Storage used by the Supabase client for the login session.
@@ -34,6 +31,4 @@ function createMemoryBackend(): AsyncKeyValueBackend {
 }
 
 export const authSessionStorage: AsyncKeyValueBackend =
-  Platform.OS === "web"
-    ? createMemoryBackend()
-    : createChunkedStorage(secureStoreBackend);
+  Platform.OS === 'web' ? createMemoryBackend() : createChunkedStorage(secureStoreBackend);

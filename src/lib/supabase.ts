@@ -1,9 +1,9 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { AppState, Platform } from "react-native";
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { AppState, Platform } from 'react-native';
 
-import { getEnv } from "@/config/env";
+import { getEnv } from '@/config/env';
 
-import { authSessionStorage } from "./secureSessionStorage";
+import { authSessionStorage } from './secureSessionStorage';
 
 /**
  * The single Supabase client for the BHW Care app.
@@ -36,10 +36,10 @@ export function getSupabase(): SupabaseClient {
   client = created;
 
   // Only refresh tokens while the app is in the foreground.
-  if (Platform.OS !== "web" && !appStateListenerAttached) {
+  if (Platform.OS !== 'web' && !appStateListenerAttached) {
     appStateListenerAttached = true;
-    AppState.addEventListener("change", (state) => {
-      if (state === "active") {
+    AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
         void created.auth.startAutoRefresh();
       } else {
         void created.auth.stopAutoRefresh();

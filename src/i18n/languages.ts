@@ -5,17 +5,14 @@
  *   user preference -> system default -> English
  */
 
-export const SUPPORTED_LANGUAGES = ["en", "tl"] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'tl'] as const;
 
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
-export const FALLBACK_LANGUAGE: Language = "en";
+export const FALLBACK_LANGUAGE: Language = 'en';
 
 export function isSupportedLanguage(value: unknown): value is Language {
-  return (
-    typeof value === "string" &&
-    (SUPPORTED_LANGUAGES as readonly string[]).includes(value)
-  );
+  return typeof value === 'string' && (SUPPORTED_LANGUAGES as readonly string[]).includes(value);
 }
 
 /**

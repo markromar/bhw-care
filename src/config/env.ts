@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Environment configuration for the BHW Care mobile app.
@@ -11,18 +11,16 @@ import { z } from "zod";
 
 const envSchema = z.object({
   supabaseUrl: z.url({
-    message: "EXPO_PUBLIC_SUPABASE_URL must be a valid URL",
+    message: 'EXPO_PUBLIC_SUPABASE_URL must be a valid URL',
   }),
-  supabasePublishableKey: z
-    .string()
-    .min(1, {
-      message: "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY must not be empty",
-    }),
+  supabasePublishableKey: z.string().min(1, {
+    message: 'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY must not be empty',
+  }),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
 
-const PLACEHOLDER_MARKERS = ["your-project-ref", "your-supabase-publishable"];
+const PLACEHOLDER_MARKERS = ['your-project-ref', 'your-supabase-publishable'];
 
 export type RawEnv = {
   supabaseUrl: string | undefined;
@@ -38,19 +36,19 @@ export function parseEnv(raw: RawEnv): AppEnv {
 
   if (!result.success) {
     const details = result.error.issues
-      .map((issue) => `- ${issue.path.join(".") || "env"}: ${issue.message}`)
-      .join("\n");
+      .map((issue) => `- ${issue.path.join('.') || 'env'}: ${issue.message}`)
+      .join('\n');
     throw new Error(
       `BHW Care environment configuration is invalid:\n${details}\n` +
-        "Check your .env.local file, then restart Metro with: npx expo start --clear",
+        'Check your .env.local file, then restart Metro with: npx expo start --clear',
     );
   }
 
-  if (result.data.supabasePublishableKey.startsWith("sb_secret_")) {
+  if (result.data.supabasePublishableKey.startsWith('sb_secret_')) {
     throw new Error(
-      "BHW Care environment contains a Supabase SECRET key (sb_secret_...).\n" +
-        "Secret keys must never be placed in the mobile app. " +
-        "Use the publishable key (sb_publishable_...) in .env.local instead.",
+      'BHW Care environment contains a Supabase SECRET key (sb_secret_...).\n' +
+        'Secret keys must never be placed in the mobile app. ' +
+        'Use the publishable key (sb_publishable_...) in .env.local instead.',
     );
   }
 
@@ -62,9 +60,9 @@ export function parseEnv(raw: RawEnv): AppEnv {
 
   if (usesPlaceholder) {
     throw new Error(
-      "BHW Care environment still contains placeholder values from .env.example.\n" +
-        "Put your real Supabase project URL and publishable key in .env.local, " +
-        "then restart Metro with: npx expo start --clear",
+      'BHW Care environment still contains placeholder values from .env.example.\n' +
+        'Put your real Supabase project URL and publishable key in .env.local, ' +
+        'then restart Metro with: npx expo start --clear',
     );
   }
 

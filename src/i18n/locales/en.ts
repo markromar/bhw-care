@@ -4,25 +4,25 @@
  */
 export const en = {
   app: {
-    name: "BHW Care",
+    name: 'BHW Care',
   },
   common: {
-    loading: "Loading…",
-    save: "Save",
-    cancel: "Cancel",
-    retry: "Try again",
-    back: "Back",
+    loading: 'Loading…',
+    save: 'Save',
+    cancel: 'Cancel',
+    retry: 'Try again',
+    back: 'Back',
   },
   sync: {
-    synced: "Synced",
-    savedOnDevice: "Saved on device",
-    pendingSync: "Pending sync",
-    syncing: "Syncing",
-    syncFailed: "Sync failed",
+    synced: 'Synced',
+    savedOnDevice: 'Saved on device',
+    pendingSync: 'Pending sync',
+    syncing: 'Syncing',
+    syncFailed: 'Sync failed',
   },
   settings: {
-    language: "Language",
-    languageEnglish: "English",
-    languageTagalog: "Tagalog",
+    language: 'Language',
+    languageEnglish: 'English',
+    languageTagalog: 'Tagalog',
   },
 };

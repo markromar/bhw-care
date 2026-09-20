@@ -1,15 +1,11 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
 
-import { FALLBACK_LANGUAGE, type Language } from "./languages";
-import { en } from "./locales/en";
-import { tl } from "./locales/tl";
+import { FALLBACK_LANGUAGE, type Language } from './languages';
+import { en } from './locales/en';
+import { tl } from './locales/tl';
 
-export {
-    resolveLanguage,
-    SUPPORTED_LANGUAGES,
-    type Language
-} from "./languages";
+export { resolveLanguage, SUPPORTED_LANGUAGES, type Language } from './languages';
 
 /**
  * Initializes i18next once. Call setupI18n() at app start with the language

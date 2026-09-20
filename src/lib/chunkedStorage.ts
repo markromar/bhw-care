@@ -57,7 +57,7 @@ export function createChunkedStorage(
       }
       parts.push(part);
     }
-    return parts.join("");
+    return parts.join('');
   }
 
   async function setItem(key: string, value: string): Promise<void> {
