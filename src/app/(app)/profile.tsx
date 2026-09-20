@@ -1,14 +1,32 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import type { Language } from '@/i18n';
 import { signOut } from '@/lib/auth';
+import { setLanguagePreference } from '@/lib/language';
+import { useSessionStore } from '@/state/sessionStore';
 
-// TEMPORARY profile placeholder. The shared Profile & Settings module replaces it.
+// TEMPORARY profile placeholder. The shared Profile & Settings module grows from it.
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
-  const languageLabel =
-    i18n.language === 'tl' ? t('settings.languageTagalog') : t('settings.languageEnglish');
+  const userId = useSessionStore((state) => state.userId);
+  const [notSaved, setNotSaved] = useState(false);
+
+  const options: { language: Language; label: string }[] = [
+    { language: 'en', label: t('settings.languageEnglish') },
+    { language: 'tl', label: t('settings.languageTagalog') },
+  ];
+
+  async function chooseLanguage(language: Language) {
+    setNotSaved(false);
+    if (userId === null) {
+      return;
+    }
+    const saved = await setLanguagePreference(userId, language);
+    setNotSaved(!saved);
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -16,9 +34,38 @@ export default function ProfileScreen() {
         <Text accessibilityRole="header" className="text-3xl font-bold text-slate-900">
           {t('nav.profile')}
         </Text>
-        <Text className="text-base text-slate-800">
-          {t('settings.language')}: {languageLabel}
-        </Text>
+
+        <View className="gap-3">
+          <Text className="text-base font-medium text-slate-700">{t('settings.language')}</Text>
+          <View className="flex-row gap-3">
+            {options.map((option) => {
+              const selected = i18n.language === option.language;
+              return (
+                <Pressable
+                  key={option.language}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => void chooseLanguage(option.language)}
+                  className={`min-h-12 flex-1 items-center justify-center rounded-xl border px-4 ${
+                    selected ? 'border-emerald-600 bg-emerald-600' : 'border-slate-300 bg-white'
+                  }`}>
+                  <Text
+                    className={`text-base font-semibold ${
+                      selected ? 'text-white' : 'text-slate-800'
+                    }`}>
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          {notSaved ? (
+            <Text accessibilityLiveRegion="polite" className="text-sm text-slate-500">
+              {t('sync.savedOnDevice')}
+            </Text>
+          ) : null}
+        </View>
+
         <Pressable
           accessibilityRole="button"
           onPress={() => void signOut()}

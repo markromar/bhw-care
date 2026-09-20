@@ -1,6 +1,7 @@
 import type { RoleRow } from '@/domain/sessionContext';
 import { useSessionStore } from '@/state/sessionStore';
 
+import { applyLanguageForUser, resetLanguage } from './language';
 import { syncSession } from './sessionLoader';
 import { getSupabase } from './supabase';
 
@@ -37,12 +38,15 @@ export async function signIn(email: string, password: string): Promise<SignInRes
   if (result === 'failed') {
     return { ok: false, message: 'Signed in, but your role could not be loaded.' };
   }
+
+  await applyLanguageForUser(data.user.id);
   return { ok: true };
 }
 
 export async function signOut(): Promise<void> {
   await getSupabase().auth.signOut();
   useSessionStore.getState().setSignedOut();
+  resetLanguage();
 }
 
 /**
@@ -54,14 +58,19 @@ export function startSessionListener(): () => void {
 
   void supabase.auth
     .getSession()
-    .then(({ data }) =>
-      syncSession(data.session?.user.id ?? null, fetchRoleRows, useSessionStore.getState()),
-    )
+    .then(async ({ data }) => {
+      const userId = data.session?.user.id ?? null;
+      const result = await syncSession(userId, fetchRoleRows, useSessionStore.getState());
+      if (userId !== null && result === 'signed_in') {
+        await applyLanguageForUser(userId);
+      }
+    })
     .catch(() => useSessionStore.getState().setSignedOut());
 
   const { data } = supabase.auth.onAuthStateChange((event) => {
     if (event === 'SIGNED_OUT') {
       useSessionStore.getState().setSignedOut();
+      resetLanguage();
     }
   });
 
