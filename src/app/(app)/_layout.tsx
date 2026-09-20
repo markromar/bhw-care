@@ -1,7 +1,25 @@
-import AppTabs from '@/components/app-tabs';
+import { Stack } from 'expo-router';
 
-// Tab layout for signed-in users. The Super Admin drawer shell replaces this
-// for the super_admin role in the next step.
+import { buildNavItems } from '@/domain/navigation';
+import { getShellKind } from '@/domain/roles';
+import { useSessionStore } from '@/state/sessionStore';
+import { BottomTabsShell } from '@/ui/shell/BottomTabsShell';
+import { DrawerShell } from '@/ui/shell/DrawerShell';
+
+// Chooses the shell for the signed-in role. This is UX routing only; the database
+// decides what data any role can read or write.
 export default function AppLayout() {
-  return <AppTabs />;
+  const context = useSessionStore((state) => state.context);
+
+  if (context === null || context.status !== 'ready') {
+    // No resolved role yet: show only the role home, which explains the next step.
+    return <Stack screenOptions={{ headerShown: false }} />;
+  }
+
+  const items = buildNavItems(context.role);
+
+  if (getShellKind(context.role) === 'drawer') {
+    return <DrawerShell items={items} />;
+  }
+  return <BottomTabsShell items={items} />;
 }
