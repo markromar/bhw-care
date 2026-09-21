@@ -159,7 +159,7 @@ export type RepositoryOptions<T> = {
 export type Repository<T> = {
   put(id: string, value: T): Promise<void>;
   get(id: string): Promise<CachedValue<T> | null>;
-  list(): Promise<Array<CachedValue<T> & { id: string }>>;
+  list(): Promise<(CachedValue<T> & { id: string })[]>;
   remove(id: string): Promise<void>;
   purgeStale(): Promise<number>;
 };
@@ -200,7 +200,7 @@ export function createRepository<T>(
 
     async list() {
       const records = await store.list(ownerId, collection);
-      const results: Array<CachedValue<T> & { id: string }> = [];
+      const results: (CachedValue<T> & { id: string })[] = [];
       for (const record of records) {
         const decoded = decode(record);
         if (decoded !== null) {
