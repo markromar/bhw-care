@@ -66,4 +66,15 @@ export const tl: typeof en = {
     notAvailable: 'Hindi available ang record na ito.',
     offline: 'Kailangan ng internet upang ma-verify ang access.',
   },
+  security: {
+    title: 'Seguridad',
+    twoFactor: 'Two-factor authentication',
+    required: 'Kailangan para sa inyong tungkulin',
+    statusOff: 'Naka-off',
+    statusActive: 'Aktibo',
+    statusEnrollmentRequired: 'Kailangang i-set up',
+    statusVerificationRequired: 'Kailangang i-verify',
+    statusUnknown: 'Hindi masuri',
+    setupLater: 'Idadagdag ang pag-set up ng authenticator sa susunod na update.',
+  },
 };

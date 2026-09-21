@@ -63,4 +63,15 @@ export const en = {
     notAvailable: 'This record is not available.',
     offline: 'Internet connection required to verify access.',
   },
+  security: {
+    title: 'Security',
+    twoFactor: 'Two-factor authentication',
+    required: 'Required for your role',
+    statusOff: 'Off',
+    statusActive: 'Active',
+    statusEnrollmentRequired: 'Setup required',
+    statusVerificationRequired: 'Verification required',
+    statusUnknown: 'Could not check',
+    setupLater: 'Authenticator setup will be added in a later update.',
+  },
 };
