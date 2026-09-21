@@ -3,6 +3,7 @@ import type { RoleRow } from '@/domain/sessionContext';
 import { useSessionStore } from '@/state/sessionStore';
 
 import { applyLanguageForUser, resetLanguage } from './language';
+import { registerDevicePushToken, revokeDevicePushToken } from './push';
 import { syncSession } from './sessionLoader';
 import { getSupabase } from './supabase';
 
@@ -41,10 +42,14 @@ export async function signIn(email: string, password: string): Promise<SignInRes
   }
 
   await applyLanguageForUser(data.user.id);
+  void registerDevicePushToken();
   return { ok: true };
 }
 
 export async function signOut(): Promise<void> {
+  // Revoke this device's push token while the session is still valid. Never blocks.
+  await revokeDevicePushToken();
+
   try {
     await getSupabase().auth.signOut();
   } finally {
@@ -69,6 +74,7 @@ export function startSessionListener(): () => void {
       const result = await syncSession(userId, fetchRoleRows, useSessionStore.getState());
       if (userId !== null && result === 'signed_in') {
         await applyLanguageForUser(userId);
+        void registerDevicePushToken();
       }
     })
     .catch(() => useSessionStore.getState().setSignedOut());
