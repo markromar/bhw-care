@@ -11,6 +11,9 @@ import { handleInviteKapitan, type CallerInfo } from '../_shared/inviteKapitan.t
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+// Set this project secret once (see instructions) so redirect links point at the app,
+// not at Supabase's own domain. Falls back to the project URL if unset for now.
+const APP_INVITE_REDIRECT = Deno.env.get('APP_INVITE_REDIRECT') ?? undefined;
 
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
@@ -29,16 +32,23 @@ Deno.serve(async (req: Request) => {
   // function is trusted to perform, never exposed to the request body.
   const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
+  function decodeAalFromJwt(token: string): 'aal1' | 'aal2' | null {
+    try {
+      const payloadSegment = token.split('.')[1];
+      const payload = JSON.parse(atob(payloadSegment.replace(/-/g, '+').replace(/_/g, '/')));
+      const aal = payload.aal;
+      return aal === 'aal1' || aal === 'aal2' ? aal : null;
+    } catch {
+      return null;
+    }
+  }
+
   let caller: CallerInfo | null = null;
   if (jwt !== '') {
     const { data } = await callerClient.auth.getUser(jwt);
     if (data.user) {
-      const { data: aal } = await callerClient.auth.mfa.getAuthenticatorAssuranceLevel();
-      const level = aal?.currentLevel;
-      caller = {
-        userId: data.user.id,
-        assuranceLevel: level === 'aal1' || level === 'aal2' ? level : null,
-      };
+      const level = decodeAalFromJwt(jwt);
+      caller = { userId: data.user.id, assuranceLevel: level };
     }
   }
 
@@ -86,7 +96,28 @@ Deno.serve(async (req: Request) => {
         if (error || !data) {
           throw new Error(error?.message ?? 'insert failed');
         }
-        return { id: data.id as string, tokenReference: data.id as string };
+        return { id: data.id as string };
+      },
+      sendInviteEmail: async ({ email, invitationId }) => {
+        // No PHI in metadata; only the invitation id, used by the acceptance screen to
+        // confirm which invitation the accepting user is completing.
+        const { data, error } = await adminClient.auth.admin.inviteUserByEmail(email, {
+          redirectTo: APP_INVITE_REDIRECT,
+          data: { invitation_id: invitationId },
+        });
+        if (error || !data.user) {
+          throw new Error(error?.message ?? 'invite email failed');
+        }
+        return { invitedUserId: data.user.id };
+      },
+      setTokenReference: async (invitationId, invitedUserId) => {
+        const { error } = await adminClient
+          .from('role_invitations')
+          .update({ token_reference: invitedUserId })
+          .eq('id', invitationId);
+        if (error) {
+          throw new Error(error.message);
+        }
       },
       writeAudit: async ({ actorId, action, entityType, entityId, barangayId, details }) => {
         const { error } = await adminClient.from('audit_events').insert({

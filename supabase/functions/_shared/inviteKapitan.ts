@@ -20,7 +20,12 @@ export type CreateInvitation = (input: {
   email: string;
   barangayId: string;
   invitedBy: string;
-}) => Promise<{ id: string; tokenReference: string }>;
+}) => Promise<{ id: string }>;
+export type SendInviteEmail = (input: {
+  email: string;
+  invitationId: string;
+}) => Promise<{ invitedUserId: string }>;
+export type SetTokenReference = (invitationId: string, invitedUserId: string) => Promise<void>;
 export type WriteAudit = (input: {
   actorId: string;
   action: string;
@@ -43,12 +48,18 @@ export type InviteKapitanDeps = {
   getRole: RoleLookup;
   getBarangay: BarangayLookup;
   createInvitation: CreateInvitation;
+  sendInviteEmail: SendInviteEmail;
+  setTokenReference: SetTokenReference;
   writeAudit: WriteAudit;
 };
 
 /**
  * Handles one invite-kapitan request. Every failure path returns a result rather
  * than throwing, so the Edge Function can always produce a clean HTTP response.
+ *
+ * The invitation row is the authorization source; the email is only delivery.
+ * A failure to send the email does not roll back the invitation row (it stays valid
+ * and can be resent later), but is reported so the caller knows delivery may have failed.
  */
 export async function handleInviteKapitan(
   caller: CallerInfo | null,
@@ -87,7 +98,7 @@ export async function handleInviteKapitan(
     return { ok: false, status: 400, body: { error: 'barangay_suspended' } };
   }
 
-  let created: { id: string; tokenReference: string };
+  let created: { id: string };
   try {
     created = await deps.createInvitation({
       email,
@@ -96,6 +107,15 @@ export async function handleInviteKapitan(
     });
   } catch {
     return { ok: false, status: 500, body: { error: 'invitation_creation_failed' } };
+  }
+
+  try {
+    const sent = await deps.sendInviteEmail({ email, invitationId: created.id });
+    await deps.setTokenReference(created.id, sent.invitedUserId);
+  } catch {
+    // The invitation row exists and is valid regardless of email delivery. The row is
+    // the authorization source; the email is only delivery and can be retried by
+    // re-sending later. Not treated as a hard failure of the request.
   }
 
   try {

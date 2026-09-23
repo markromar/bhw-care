@@ -7,7 +7,9 @@ function createDeps(overrides: Partial<InviteKapitanDeps> = {}): InviteKapitanDe
   return {
     getRole: jest.fn().mockResolvedValue({ isSuperAdmin: true }),
     getBarangay: jest.fn().mockResolvedValue({ exists: true, status: 'active' }),
-    createInvitation: jest.fn().mockResolvedValue({ id: 'inv-1', tokenReference: 'ref-1' }),
+    createInvitation: jest.fn().mockResolvedValue({ id: 'inv-1' }),
+    sendInviteEmail: jest.fn().mockResolvedValue({ invitedUserId: 'user-1' }),
+    setTokenReference: jest.fn().mockResolvedValue(undefined),
     writeAudit: jest.fn().mockResolvedValue(undefined),
     ...overrides,
   };
@@ -16,7 +18,7 @@ function createDeps(overrides: Partial<InviteKapitanDeps> = {}): InviteKapitanDe
 const VALID_REQUEST = { email: '  Kapitan.Test@Example.com ', barangayId: BARANGAY_ID };
 
 describe('handleInviteKapitan', () => {
-  it('creates the invitation and writes an audit event for a verified Super Admin', async () => {
+  it('creates the invitation, sends the email, records the reference, and audits', async () => {
     const deps = createDeps();
 
     const result = await handleInviteKapitan(CALLER, VALID_REQUEST, deps);
@@ -27,6 +29,11 @@ describe('handleInviteKapitan', () => {
       barangayId: BARANGAY_ID,
       invitedBy: CALLER.userId,
     });
+    expect(deps.sendInviteEmail).toHaveBeenCalledWith({
+      email: 'kapitan.test@example.com',
+      invitationId: 'inv-1',
+    });
+    expect(deps.setTokenReference).toHaveBeenCalledWith('inv-1', 'user-1');
     expect(deps.writeAudit).toHaveBeenCalledWith(
       expect.objectContaining({ actorId: CALLER.userId, action: 'invitation.created' }),
     );
@@ -125,6 +132,17 @@ describe('handleInviteKapitan', () => {
       status: 500,
       body: { error: 'invitation_creation_failed' },
     });
+  });
+
+  it('still returns success if sending the email fails (the invitation row stands)', async () => {
+    const deps = createDeps({
+      sendInviteEmail: jest.fn().mockRejectedValue(new Error('smtp down')),
+    });
+
+    const result = await handleInviteKapitan(CALLER, VALID_REQUEST, deps);
+
+    expect(result).toEqual({ ok: true, status: 200, body: { invitationId: 'inv-1' } });
+    expect(deps.setTokenReference).not.toHaveBeenCalled();
   });
 
   it('still returns success if only the audit write fails', async () => {
