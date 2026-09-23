@@ -35,6 +35,8 @@ export const en = {
     noRole: 'Your account has no role yet. Please contact your health center.',
     invalidScope: 'Your account needs review. Please contact your health center.',
     chooseRole: 'Choose how you want to continue',
+    mfaTitle: 'Verify your identity',
+    mfaFailed: 'That code was not accepted. Please try again.',
   },
   roles: {
     super_admin: 'Super Admin',
@@ -73,5 +75,10 @@ export const en = {
     statusVerificationRequired: 'Verification required',
     statusUnknown: 'Could not check',
     setupLater: 'Authenticator setup will be added in a later update.',
+    setUp: 'Set up authenticator',
+    scanQr: 'Scan this code with your authenticator app.',
+    orEnterSecret: 'Or enter this code manually:',
+    enterCode: '6-digit code',
+    verify: 'Verify',
   },
 };

@@ -38,6 +38,8 @@ export const tl: typeof en = {
     noRole: 'Wala pang tungkulin ang inyong account. Makipag-ugnayan sa health center.',
     invalidScope: 'Kailangang suriin ang inyong account. Makipag-ugnayan sa health center.',
     chooseRole: 'Piliin kung paano magpapatuloy',
+    mfaTitle: 'I-verify ang inyong pagkakakilanlan',
+    mfaFailed: 'Hindi tinanggap ang code na iyon. Subukan muli.',
   },
   roles: {
     super_admin: 'Super Admin',
@@ -76,5 +78,10 @@ export const tl: typeof en = {
     statusVerificationRequired: 'Kailangang i-verify',
     statusUnknown: 'Hindi masuri',
     setupLater: 'Idadagdag ang pag-set up ng authenticator sa susunod na update.',
+    setUp: 'I-set up ang authenticator',
+    scanQr: 'I-scan ang code na ito gamit ang inyong authenticator app.',
+    orEnterSecret: 'O ilagay ang code na ito nang manu-mano:',
+    enterCode: '6-digit na code',
+    verify: 'I-verify',
   },
 };

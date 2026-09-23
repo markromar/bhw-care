@@ -3,6 +3,7 @@ import type { RoleRow } from '@/domain/sessionContext';
 import { useSessionStore } from '@/state/sessionStore';
 
 import { applyLanguageForUser, resetLanguage } from './language';
+import { getVerifiedTotpFactor } from './mfaChallenge';
 import { registerDevicePushToken, revokeDevicePushToken } from './push';
 import { syncSession } from './sessionLoader';
 import { getSupabase } from './supabase';
@@ -27,7 +28,20 @@ async function fetchRoleRows(userId: string): Promise<RoleRow[]> {
   return data ?? [];
 }
 
-export type SignInResult = { ok: true } | { ok: false; message: string };
+async function finishSignIn(userId: string): Promise<SignInResult> {
+  const result = await syncSession(userId, fetchRoleRows, useSessionStore.getState());
+  if (result === 'failed') {
+    return { ok: false, message: 'Signed in, but your role could not be loaded.' };
+  }
+  await applyLanguageForUser(userId);
+  void registerDevicePushToken();
+  return { ok: true };
+}
+
+export type SignInResult =
+  | { ok: true }
+  | { ok: false; message: string }
+  | { ok: false; mfaRequired: true; factorId: string };
 
 export async function signIn(email: string, password: string): Promise<SignInResult> {
   const { data, error } = await getSupabase().auth.signInWithPassword({ email, password });
@@ -36,14 +50,23 @@ export async function signIn(email: string, password: string): Promise<SignInRes
     return { ok: false, message: error.message };
   }
 
-  const result = await syncSession(data.user.id, fetchRoleRows, useSessionStore.getState());
-  if (result === 'failed') {
-    return { ok: false, message: 'Signed in, but your role could not be loaded.' };
+  const factor = await getVerifiedTotpFactor();
+  if (factor.hasVerifiedFactor) {
+    // Password step passed, but this session is still aal1. Do not load role/session
+    // data yet; the sign-in screen must collect and verify the TOTP code first.
+    return { ok: false, mfaRequired: true, factorId: factor.factorId };
   }
 
-  await applyLanguageForUser(data.user.id);
-  void registerDevicePushToken();
-  return { ok: true };
+  return finishSignIn(data.user.id);
+}
+
+/** Completes sign-in after a TOTP code has been verified for this session. */
+export async function completeSignInAfterMfa(): Promise<SignInResult> {
+  const { data, error } = await getSupabase().auth.getUser();
+  if (error || !data.user) {
+    return { ok: false, message: 'Session was lost during verification.' };
+  }
+  return finishSignIn(data.user.id);
 }
 
 export async function signOut(): Promise<void> {
@@ -74,7 +97,6 @@ export function startSessionListener(): () => void {
       const result = await syncSession(userId, fetchRoleRows, useSessionStore.getState());
       if (userId !== null && result === 'signed_in') {
         await applyLanguageForUser(userId);
-        void registerDevicePushToken();
       }
     })
     .catch(() => useSessionStore.getState().setSignedOut());
