@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>BHW Care - Redirecting</title>
+  </head>
+  <body>
+    <p>Redirecting to BHW Care&hellip;</p>
+    <script>
+      // Supabase delivers the invite tokens in the URL fragment (#access_token=...).
+      // This page's only job is to hand that fragment off to the app's own scheme,
+      // since Supabase's invite-link flow does not accept exp:// directly as redirectTo.
+      // EXPO_HOST is replaced per-environment; see BHW Care docs for the deploy step.
+      var EXPO_HOST = '10.86.5.209:8081'; // e.g. 10.224.34.208:8081
+      var hash = window.location.hash; // includes the leading '#'
+      window.location.replace('exp://' + EXPO_HOST + '/--/accept-invitation' + hash);
+    </script>
+    <noscript>
+      <p>
+        JavaScript is required to finish setting up your account. Please enable it and reload this
+        page.
+      </p>
+    </noscript>
+  </body>
+</html>
